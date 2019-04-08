@@ -56,7 +56,7 @@ class gitHubGather:
 	def parseFile(self, filePath):
 		fhandle = open(filePath)
 		filedata = fhandle.read()
-		ips_ipv4 =  re.findall('"([^"]*)"', filedata)
+		ips_ipv4 =  re.findall('`(.*)`', filedata)
 		peers = {}
 		for ip in ips_ipv4:		
 			ip = ip.replace("tcp://","")
