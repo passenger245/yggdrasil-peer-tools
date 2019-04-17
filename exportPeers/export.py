@@ -1,20 +1,22 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from gitHubGather import gitHubGather
+from peerCheck import peerCheck
 import geocoder
 import os
 import json
 import time
 import sys
 import traceback
-class Export(gitHubGather):
+class Export(gitHubGather, peerCheck):
 
 	def __init__(self):
 		self.exportBucket = {}
 		self.verbosive = True
+		super(Export, self).__init__()
 	def stdout(self, data):
 		if self.verbosive:
-			print data
+			print(data)
 
 	def get_export(self):
 		if not os.path.exists("peersExport.json"):
@@ -23,6 +25,7 @@ class Export(gitHubGather):
 		try:
 			return json.load(open("peersExport.json"))
 		except:
+			self.stdout("peersExport.json corrupted")
 			return {}
 
 	def write_export(self):
@@ -50,6 +53,7 @@ class Export(gitHubGather):
 	def get(self):
 		self.exportBucket = self.sync()
 		self.geocode_peers()
+		self.downcheck_peers()
 		self.write_export()
 	def geocode_peer(self, peerIP):
 		geocode = geocoder.ip(peerIP)
@@ -62,6 +66,15 @@ class Export(gitHubGather):
 		for peerIP in self.exportBucket:
 			if "latlng_cords" not in self.exportBucket[peerIP]:
 				self.geocode_peer(peerIP)
+
+	def downcheck_peer(self, peerIP):
+		peerPort = self.exportBucket[peerIP]["port"]
+		downcheck = self.launch_process(peerIP, peerPort)
+		if downcheck:
+			self.exportBucket[peerIP].update(downcheck)
+	def downcheck_peers(self):
+		for peerIP in self.exportBucket:
+			self.downcheck_peer(peerIP)
 	
 export = Export()
 try:			

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import subprocess
 import os
@@ -28,16 +28,23 @@ class gitHubGather:
 		isIPv4 = False
 		isIPv6 = False
 
+		try:
+			port = int(port)
+		except:
+			return False
+
+		if port < 1 or port > 65535:
+			return False
 
 		try:
-			addressObj = ipaddress.IPv4Address(unicode(ip))
+			addressObj = ipaddress.IPv4Address(ip)
 			isIPv4 = True
 		except:
 			pass
 
 		if not isIPv4:
 			try:
-				addressObj = ipaddress.IPv6Address(unicode(ip))
+				addressObj = ipaddress.IPv6Address(ip)
 				isIPv6 = True
 			except:
 				pass
@@ -57,6 +64,7 @@ class gitHubGather:
 		fhandle = open(filePath)
 		filedata = fhandle.read()
 		ips_ipv4 =  re.findall('`(.*)`', filedata)
+
 		peers = {}
 		for ip in ips_ipv4:		
 			ip = ip.replace("tcp://","")
@@ -77,7 +85,8 @@ class gitHubGather:
 					if item.find(".md") == -1:
 						continue
 					filePath = "%s/%s" % (continent, item)
-					peers.update(self.parseFile(filePath))
+					parse = self.parseFile(filePath)
+					peers.update(parse)
 		os.chdir("..")
 		return peers	
 
